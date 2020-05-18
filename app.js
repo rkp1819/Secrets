@@ -1,7 +1,9 @@
 //jshint esversion: 6
+require('dotenv').config()
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const md5 = require('md5');
 const ejs = require('ejs');
 const app = express();
 const util = require(__dirname+'/util.js');
@@ -9,12 +11,12 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
-
+// const encrypt = require('mongoose-encryption');
 
  //db
  mongoose.connect("mongodb://localhost:27017/userDB", { useUnifiedTopology: true, useNewUrlParser: true});
 
- const userSchema = mongoose.Schema({
+ const userSchema = new mongoose.Schema({
      email: {
        type: String,
        required: [true, "use a email id"]
@@ -24,7 +26,13 @@ app.use(express.static("public"));
        required: [true, "use a password"]
      }
  });
- const User = new mongoose.model('user', userSchema);
+
+// const encKey = process.env.SOME_32BYTE_BASE64_STRING;
+// const sigKey = process.env.SOME_64BYTE_BASE64_STRING;
+
+// userSchema.plugin(encrypt, { encryptionKey: encKey, signingKey: sigKey, encryptedFields: ['password'] });
+
+const User = new mongoose.model('User', userSchema);
 
 
 
@@ -47,8 +55,7 @@ app.get('/login', function(req, res){
 })
 
 app.post('/login', function(req, res){
-  founduser = util.getUser(req, res, User);
-  res.render('secrets');
+  util.getUser(req, res, User)
 });
 
 app.get('/logout', function(req, res){

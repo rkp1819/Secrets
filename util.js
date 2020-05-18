@@ -1,34 +1,31 @@
+md5 = require('md5');
 exports.saveUser = function(req, res, User){
-  console.log(req.body.email);
-  console.log(req.body.password);
-
   user = new User({
     email:req.body.email,
-    password:req.body.password,
+    password:md5(req.body.password),
   });
   User.create(user, function(err, doc){
       if (err) {
         console.log(err);
         res.status(500).send(e);
       } else {
-        console.log('Saved User: ',req.body);
+        console.log('Saved User: ',req.body.email, md5(req.body.password));
       }
   });
 };
 
-exports.getUser = async function(req, res, User){
-  docs = await User.findOne({ email: req.body.email, password: req.body.password },{}, function(err, founduser){
+exports.getUser = function(req, res, User){
+  User.findOne({ email: req.body.email }, function(err, founduser){
     if (err) {
-      res.status(500).send(err);
+      console.log('error in getUser findOne: ',err);
     } else {
-      console.log('founduser', founduser);
-      if(null == founduser){
-        console.log('Authentication error: ',req.body);
+      if(null==founduser || founduser.password!=md5(req.body.password)){
+        console.log('Authentication error: ',req.body.email);
         res.render('login', {errors: ['Authentication Error, Please try again']});
       }else{
-        console.log('Logged In! ',req.body)
+        console.log('Logged In! ',req.body.email)
+        res.render('secrets');
       }
     }
   });
-  return docs;
 };
